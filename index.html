@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>كشاف متأرجح</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #0b0f2c 0%, #000 100%);
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Cairo', Tahoma, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      position: relative;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 0;
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(white 1.5px, transparent 1.5px);
+      background-size: 6px 6px;
+      opacity: 0.1;
+      z-index: 0;
+    }
+
+    /* تعديل موقع الكشاف: في منتصف أعلى الصفحة */
+    .lamp-wrapper {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform-origin: top center;
+      animation: swing 4s infinite ease-in-out;
+      z-index: 5;
+      transform: translateX(-50%) rotate(-25deg); /* نبدأ مائل لليسار */
+    }
+
+    .stick {
+      width: 6px;
+      height: 100px;
+      background: linear-gradient(to bottom, #00eaff, #007ea7);
+      margin: 0 auto;
+      border-radius: 3px;
+      box-shadow: 0 0 10px #00eaff;
+    }
+
+    .lamp {
+      width: 120px;
+      height: 60px;
+      background: #00eaff;
+      border-radius: 100px 100px 0 0;
+      box-shadow: 0 5px 30px rgba(0, 255, 255, 0.8);
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+      filter: drop-shadow(0 0 10px #00eaff);
+    }
+
+    .beam {
+      position: absolute;
+      top: 140px;
+      left: 50%;
+      width: 600px;
+      height: 140vh;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(0,255,255,0.7) 0%, rgba(0,255,255,0.2) 55%, transparent 80%);
+      clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%);
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      transition: opacity 0.5s;
+      z-index: 3;
+      filter: drop-shadow(0 0 20px #00eaff);
+    }
+
+    @keyframes swing {
+      0%   { transform: translateX(-50%) rotate(-25deg); }
+      50%  { transform: translateX(-50%) rotate(25deg); }
+      100% { transform: translateX(-50%) rotate(-25deg); }
+    }
+
+    .name-container {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      pointer-events: none;
+      height: 130px; /* مساحة للنص والنص الفرعي */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .name {
+      font-size: 70px;
+      font-weight: 900;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      margin: 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+      mask-size: 600px 140vh;
+      -webkit-mask-size: 600px 140vh;
+      mask-position: 50% 0;
+      -webkit-mask-position: 50% 0;
+    }
+
+    .name.visible {
+      opacity: 1;
+      -webkit-mask-image: radial-gradient(ellipse at center, white 0%, white 45%, transparent 75%);
+      mask-image: radial-gradient(ellipse at center, white 0%, white 45%, transparent 75%);
+    }
+
+    .subname {
+      font-size: 22px;
+      font-weight: 600;
+      color: #00eaff;
+      letter-spacing: 3px;
+      filter: drop-shadow(0 0 8px #00eaff);
+      margin-top: 6px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .subname.visible {
+      opacity: 1;
+    }
+
+    /* زر التبديل في منتصف الأسفل */
+    .switch-container {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 20;
+      user-select: none;
+      background: rgba(0,0,0,0.3);
+      padding: 8px 20px;
+      border-radius: 30px;
+      box-shadow: 0 0 20px #00eaffaa;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 70px;
+      height: 38px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #222;
+      transition: .4s;
+      border-radius: 38px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 30px;
+      width: 30px;
+      left: 4px;
+      bottom: 4px;
+      background-color: #00eaff;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #00eaff;
+    }
+
+    input:checked + .slider {
+      background-color: #00eaff;
+      box-shadow: 0 0 12px #00eaff;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(32px);
+      background-color: white;
+      box-shadow: 0 0 20px #00eaff;
+    }
+
+    .switch-label {
+      color: #00eaff;
+      font-weight: 700;
+      font-size: 18px;
+      user-select: none;
+      filter: drop-shadow(0 0 4px #00eaff);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scene" id="scene">
+    <div class="stars"></div>
+
+    <div class="lamp-wrapper" id="lampWrapper">
+      <div class="stick"></div>
+      <div class="lamp"></div>
+      <div class="beam" id="beam"></div>
+    </div>
+
+    <div class="name-container">
+      <h1 class="name" id="name">LEADER SYRIA</h1>
+      <div class="subname" id="subname">@SYRIA7R ☆</div>
+    </div>
+  </div>
+
+  <div class="switch-container">
+    <label class="switch">
+      <input type="checkbox" id="toggle" />
+      <span class="slider"></span>
+    </label>
+    <span class="switch-label">تشغيل / إيقاف</span>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('toggle');
+    const nameText = document.getElementById('name');
+    const subNameText = document.getElementById('subname');
+    const beam = document.getElementById('beam');
+    const body = document.body;
+
+    toggle.addEventListener('change', () => {
+      if (toggle.checked) {
+        body.classList.add('on');
+        beam.style.opacity = '1';
+      } else {
+        body.classList.remove('on');
+        beam.style.opacity = '0';
+        nameText.classList.remove('visible');
+        subNameText.classList.remove('visible');
+      }
+    });
+
+    function syncMaskPosition() {
+      if (!toggle.checked) {
+        requestAnimationFrame(syncMaskPosition);
+        return;
+      }
+
+      const beamRect = beam.getBoundingClientRect();
+      const sceneRect = document.getElementById('scene').getBoundingClientRect();
+
+      const beamLeft = beamRect.left - sceneRect.left;
+      const beamRight = beamLeft + beamRect.width;
+
+      const nameRect = nameText.getBoundingClientRect();
+      const subNameRect = subNameText.getBoundingClientRect();
+
+      // نحسب الحدود الأفقية للنص الرئيسي والفرعي معاً
+      const textLeft = Math.min(nameRect.left, subNameRect.left) - sceneRect.left;
+      const textRight = Math.max(nameRect.right, subNameRect.right) - sceneRect.left;
+
+      // نزامن القناع مع موضع الشعاع
+      nameText.style.webkitMaskPosition = `${beamLeft}px 0`;
+      nameText.style.maskPosition = `${beamLeft}px 0`;
+
+      // نظهر النصوص فقط إذا كان النص كاملًا داخل الشعاع (أي لا يخرج حتى ببيكسل واحد)
+      if (textLeft >= beamLeft && textRight <= beamRight) {
+        nameText.classList.add('visible');
+        subNameText.classList.add('visible');
+      } else {
+        nameText.classList.remove('visible');
+        subNameText.classList.remove('visible');
+      }
+
+      requestAnimationFrame(syncMaskPosition);
+    }
+
+    syncMaskPosition();
+  </script>
+
+</body>
+</html>
